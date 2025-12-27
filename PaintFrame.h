@@ -15,6 +15,8 @@ public:
 
     void setAlgorithm(Algorithm *algo) { m_algorithm = algo; }
     void setUseParametric(bool use) { m_useParametric = use; }
+    void setMode(CircleMode mode) { m_currentMode = mode; }
+
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -22,6 +24,9 @@ protected:
 private:
     Algorithm *m_algorithm = nullptr;
     bool m_useParametric = false;
+
+    CircleMode m_currentMode = CircleMode::Midpoint; // 儲存目前的模式
+
 };
 
 #endif // PAINTWIDGET_H

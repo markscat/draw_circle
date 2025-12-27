@@ -15,10 +15,24 @@ void PaintFrame::paintEvent(QPaintEvent *)
     QPainter painter(this);
     painter.setPen(Qt::black);
 
-    const auto &pts = m_useParametric ? m_algorithm->getParametricPoints()
-                                      : m_algorithm->getMidpointPoints();
 
-    for (auto p : pts) {
+    const std::vector<std::pair<int,int>>* pts;
+
+    switch (m_currentMode) {
+    case CircleMode::Midpoint:
+        pts = &m_algorithm->getMidpointPoints();
+        break;
+    case CircleMode::Parametric:
+        pts = &m_algorithm->getParametricPoints();
+        break;
+    case CircleMode::Bresenham:
+        pts = &m_algorithm->getBresenhamPoints();
+        break;
+    default:
+        return;
+    }
+
+    for (const auto &p : *pts) {
         painter.drawPoint(p.first, p.second);
     }
 }

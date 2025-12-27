@@ -1,32 +1,53 @@
-# Prerequisites
-*.d
+# Qt Creator user settings (���a�]�w�A��������)
+*.pro.user
+*.user
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# CMake build directory (�ظm���G��Ƨ�)
+# ----------------------------------------
+# ������� build/ �ؿ��U���Ҧ����e
+build/
 
-# Precompiled Headers
-*.gch
-*.pch
+# ���u���v���� build/Release/ (��������)
+!build/Release/
 
-# Compiled Dynamic libraries
+# �p�G build/Release/ �U�٦��l�ؿ��A���Ʊ�Q�����A�]�i�H�~��K�[�������W�h
+# �Ҧp�A�p�G Release/ �U�� my_release_binary.exe �A�Q�l�ܡA�����Q�l�ܨ�L���G
+# !build/Release/my_release_binary.exe
+
+# CMake generated files (CMake �֨��M�����ɮ�)
+CMakeCache.txt
+CMakeLists.txt
+CMakeCache.txt.usr
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CPackConfig.cmake
+CTestTestfile.cmake
+
+# Ninja build files (�p�G�A�� CMake �ϥ� Ninja �@���ͦ���)
+.ninja_deps
+.ninja_log
+
+# Executables and libraries (�i�����ɩM�w�ɮ�)
+*.exe
+*.dll
+*.lib
 *.so
 *.dylib
-*.dll
 
-# Fortran module files
-*.mod
-*.smod
+# Object files (�sĶ��������)
+*.obj
+*.o
+*.lo
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+# Debugging files
+*.pdb
+*.ilk
 
-# Executables
-*.exe
-*.out
-*.app
+# Qt specific files (Qt Designer ������ UI �sĶ�����A�q�`�ѽsĶ���۰ʥͦ�)
+ui_*.h
+moc_*.cpp
+qrc_*.cpp
+*.qrc.cpp # for newer Qt versions
+*.json
+icon/—Pngtree—wifi vector icon_4015278.png

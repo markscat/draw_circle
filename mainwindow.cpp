@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "Algorithm.h"
+#include "PaintFrame.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -10,21 +11,43 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    m_paintFrame = new PaintFrame(this);
-    m_paintFrame->setGeometry(ui->Paint_frame->geometry());
+    // 【重點 1】將成員指標指向 UI 裡的物件
+    m_paintFrame = ui->Paint_frame;
     m_paintFrame->setAlgorithm(m_algorithm);
-    m_paintFrame->show();
+
+
+    // 【重點 2】設定 Slider 範圍，否則預設可能是 0
+    ui->Diameter_horizontalSlider->setRange(1, 200);
+    ui->Diameter_horizontalSlider->setValue(50);
+
+    // 【重點 3】初始化 ComboBox 選項
+    ui->Algorithm_comboBox->addItem("Midpoint");
+    ui->Algorithm_comboBox->addItem("Parametric");
+    ui->Algorithm_comboBox->addItem("Bresenham"); // 新增選項
 
 
     // Timer 用於動畫
     m_timer = new QTimer(this);
+
     connect(m_timer, &QTimer::timeout, [=](){
-        bool running = m_useParametric ? m_algorithm->nextParametric()
-                                       : m_algorithm->nextMidpoint();
-        if (!running) m_timer->stop();
+        // 不管是哪種模式，通通呼叫 next()
+        if (!m_algorithm->next()) {
+            m_timer->stop();
+        }
         m_paintFrame->update();
     });
 
+/*
+    connect(m_timer, &QTimer::timeout, [=](){
+        bool running = false;
+        if (ui->Algorithm_comboBox->currentIndex() == 0) running = m_algorithm->nextMidpoint();
+        else if (ui->Algorithm_comboBox->currentIndex() == 1) running = m_algorithm->nextParametric();
+        else running = m_algorithm->nextBresenham();
+
+        if (!running) m_timer->stop();
+        m_paintFrame->update();
+    });
+*/
 
     // 按鈕連線
     connect(ui->Start_pushButton_2, &QPushButton::clicked, this, &MainWindow::onStart);
@@ -35,13 +58,19 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->Diameter_horizontalSlider, &QSlider::valueChanged, this, &MainWindow::onDiameterChanged);
 
     // 下拉選單切換算法 (必須在 UI 中加一個 ComboBox)
-    // connect(ui->algorithmComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
-    //        this, &MainWindow::onAlgorithmChanged);
+     connect(ui->Algorithm_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::onAlgorithmChanged);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+
+void MainWindow::onStart()
+{
+    m_timer->start(30); // 每 30ms 走一步
 }
 
 void MainWindow::onStep()
@@ -61,21 +90,49 @@ void MainWindow::onStop()
 
 void MainWindow::onDiameterChanged(int value)
 {
+    ui->Diameter_lineEdit->setText(QString::number(value)); // 順便更新輸入框
     m_algorithm->setRadius(value);
+
+    // 重設算法狀態
     m_algorithm->resetMidpoint();
     m_algorithm->resetParametric();
+
     m_paintFrame->update();
 }
 
 void MainWindow::onAlgorithmChanged(int index)
 {
-    // 0 = Midpoint, 1 = Parametric
-    m_useParametric = (index == 1);
-    if (m_useParametric)
-        m_algorithm->resetParametric();
-    else
-        m_algorithm->resetMidpoint();
+    m_timer->stop();
 
-    m_paintFrame->setUseParametric(m_useParametric);
+    // 根據索引設定模式
+    CircleMode mode = static_cast<CircleMode>(index);
+    m_algorithm->setMode(mode);
+
+
+    // 重設對應的演算法狀態（或是全部重設也可以）
+    switch (mode) {
+    case CircleMode::Midpoint:
+        m_algorithm->resetMidpoint();
+        break;
+
+    case CircleMode::Parametric:
+        m_algorithm->resetParametric();
+        break;
+
+    case CircleMode::Bresenham:
+        m_algorithm->resetBresenham();
+        break;
+
+        // 未來若增加新演算法，只需在此新增 case：
+        // case CircleMode::NewAlgorithm:
+        //     m_algorithm->resetNewAlgorithm();
+        //     break;
+
+    default:
+        // 處理未預期的情況
+        break;
+    }
+    // 更新繪圖框的模式 (假設 PaintFrame 也有對應的 setMode)
+
     m_paintFrame->update();
 }

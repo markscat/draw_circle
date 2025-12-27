@@ -31,6 +31,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         PaintFrame.h
         PaintFrame.cpp
     )
+
+
+
+target_include_directories(draw_circle PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(draw_circle PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET draw_circle APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
