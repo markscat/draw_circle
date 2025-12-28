@@ -3,12 +3,15 @@
 #pragma once
 #include <vector>
 #include <utility>
+#include <deque> // 使用 deque 方便處理滑動窗口
+
 
 enum class CircleMode { Midpoint, Parametric, Bresenham };
 
 
 class Algorithm {
 public:
+
     Algorithm(int cx, int cy, int radius);
 
     // 設定半徑
@@ -38,6 +41,15 @@ public:
     const std::vector<std::pair<int,int>>& getBresenhamPoints() const { return m_bresPoints; }
 
 
+    // --- Wave 專用介面 ---
+    void resetWave();
+    bool nextWave(double deltaTheta); // deltaTheta 由頻率決定
+
+    // 取得目前 Wave 的資料
+    double getWaveTheta() const;
+    const std::deque<double>& getWaveHistory() const;
+
+
 private:
     int m_cx, m_cy;
     int m_radius;
@@ -64,6 +76,11 @@ private:
 
     // 通用對稱點助手 (修改為可傳入目標 vector)
     void addEightPoints(int x, int y, std::vector<std::pair<int,int>>& container);
+
+    // --- Wave 專用狀態 ---
+    double m_waveTheta;        // 目前轉動的角度
+    std::deque<double> m_waveHistory; // 儲存過去的角度序列，用來畫 Sine/Cosine 波
+    const size_t m_maxHistory = 500;  // 波形保留的最大長度
 };
 
 

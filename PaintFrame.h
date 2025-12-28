@@ -7,6 +7,13 @@
 #include <utility>
 #include "Algorithm.h"
 
+enum class FrameRole {
+    CircleAlgorithm, // 原有的圓形演算法模式
+    WaveCircle,      // 波形投影圓
+    SineWave,        // 正弦波形
+    CosineWave       // 餘弦波形
+};
+
 class PaintFrame : public QFrame
 {
     Q_OBJECT
@@ -18,6 +25,7 @@ public:
     void setUseParametric(bool use) { m_useParametric = use; }
     void setMode(CircleMode mode) { m_currentMode = mode; }
 
+    void setRole(FrameRole role) { m_role = role; }
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -27,6 +35,15 @@ private:
     bool m_useParametric = false;
 
     CircleMode m_currentMode = CircleMode::Midpoint; // 儲存目前的模式
+
+    FrameRole m_role = FrameRole::CircleAlgorithm; // 預設角色
+
+
+    // --- 這裡將不同的繪圖邏輯「命名化」 ---
+    void drawCircleAlgorithms(QPainter *painter); // 原本的 Circle_Tab 邏輯
+    void drawWaveCircle(QPainter *painter);      // Wave 投影圓
+    void drawSineWave(QPainter *painter);        // 正弦波
+    void drawCosineWave(QPainter *painter);      // 餘弦波
 
 };
 

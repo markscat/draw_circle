@@ -138,3 +138,44 @@ void Algorithm::addEightPoints(int x, int y, std::vector<std::pair<int,int>>& co
     m_bresPoints.push_back({m_cx + y, m_cy - x});
     m_bresPoints.push_back({m_cx - y, m_cy - x});
 }
+
+
+
+// ------------------- Wave Logic -------------------
+
+void Algorithm::resetWave() {
+    m_waveTheta = 0;
+    m_waveHistory.clear();
+}
+
+/**
+ * @brief 更新 Wave 的角度
+ * @param deltaTheta 每次移動的角度步長（頻率）
+ */
+bool Algorithm::nextWave(double deltaTheta) {
+    // 1. 增加角度
+    m_waveTheta += deltaTheta;
+
+    // 2. 保持角度在 0 ~ 2PI 之間（雖然不一定要，但比較整齊）
+    if (m_waveTheta > 2 * M_PI) {
+        m_waveTheta -= 2 * M_PI;
+    }
+
+    // 3. 將目前角度存入歷史紀錄的前端
+    m_waveHistory.push_front(m_waveTheta);
+
+    // 4. 如果超過最大長度，就把最舊的點丟掉，產生「流動感」
+    if (m_waveHistory.size() > m_maxHistory) {
+        m_waveHistory.pop_back();
+    }
+
+    return true; // 始終返回 true，因為波形通常是循環不斷的
+}
+
+double Algorithm::getWaveTheta() const {
+    return m_waveTheta;
+}
+
+const std::deque<double>& Algorithm::getWaveHistory() const {
+    return m_waveHistory;
+}

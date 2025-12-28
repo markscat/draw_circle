@@ -13,7 +13,9 @@ void PaintFrame::paintEvent(QPaintEvent *)
     if (!m_algorithm) return;
 
     QPainter painter(this);
-    painter.setPen(Qt::black);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    //painter.setPen(Qt::black);
 
 
     //const std::vector<std::pair<int,int>>* pts;
