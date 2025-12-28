@@ -14,6 +14,7 @@ public:
     explicit PaintFrame(QWidget *parent = nullptr);
 
     void setAlgorithm(Algorithm *algo) { m_algorithm = algo; }
+
     void setUseParametric(bool use) { m_useParametric = use; }
     void setMode(CircleMode mode) { m_currentMode = mode; }
 

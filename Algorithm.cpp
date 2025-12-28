@@ -20,6 +20,21 @@ void Algorithm::setMode(CircleMode mode) {
     m_currentMode = mode;
 }
 
+// Algorithm.cpp
+void Algorithm::reset() {
+    switch (m_currentMode) {
+    case CircleMode::Midpoint:
+        resetMidpoint();
+        break;
+    case CircleMode::Parametric:
+        resetParametric();
+        break;
+    case CircleMode::Bresenham:
+        resetBresenham();
+        break;
+    }
+}
+
 
 // 統一的入口：未來增加演算法，MainWindow 都不用改，只要改這裡的 switch
 bool Algorithm::next() {
@@ -35,6 +50,10 @@ bool Algorithm::next() {
     }
 }
 
+void Algorithm::setCenter(int cx, int cy) {
+    m_cx = cx;
+    m_cy = cy;
+}
 
 // ------------------- Midpoint -------------------
 void Algorithm::resetMidpoint() {

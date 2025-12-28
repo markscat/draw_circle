@@ -16,7 +16,9 @@ void PaintFrame::paintEvent(QPaintEvent *)
     painter.setPen(Qt::black);
 
 
-    const std::vector<std::pair<int,int>>* pts;
+    //const std::vector<std::pair<int,int>>* pts;
+    const std::vector<std::pair<int,int>>* pts = nullptr;
+
 
     switch (m_currentMode) {
     case CircleMode::Midpoint:
@@ -32,7 +34,11 @@ void PaintFrame::paintEvent(QPaintEvent *)
         return;
     }
 
-    for (const auto &p : *pts) {
-        painter.drawPoint(p.first, p.second);
+
+    // 加上安全檢查，確保 pts 不是空指標
+    if (pts) {
+        for (const auto &p : *pts) {
+            painter.drawPoint(p.first, p.second);
+        }
     }
 }

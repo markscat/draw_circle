@@ -26,6 +26,8 @@ private:
     PaintFrame *m_paintFrame;
     QTimer *m_timer;
     bool m_useParametric;
+    QElapsedTimer m_animationTimer;
+    void updateAlgorithmCenter();
 
 private slots:
     void onStart();

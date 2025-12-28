@@ -3,6 +3,9 @@
 #include "Algorithm.h"
 #include "PaintFrame.h"
 
+#include <QElapsedTimer> // 必須包含這個標頭檔
+
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -33,6 +36,18 @@ MainWindow::MainWindow(QWidget *parent)
         // 不管是哪種模式，通通呼叫 next()
         if (!m_algorithm->next()) {
             m_timer->stop();
+        }
+        m_paintFrame->update();
+    });
+
+
+    // 在 Timer 的 connect 區塊內
+    connect(m_timer, &QTimer::timeout, [=](){
+        if (!m_algorithm->next()) {
+            m_timer->stop();
+            // 當動畫停止時，計算總耗時
+            double totalSeconds = m_animationTimer.elapsed() / 1000.0;
+            ui->Time_label->setText(QString("動畫總計: %1 s").arg(totalSeconds));
         }
         m_paintFrame->update();
     });
@@ -70,15 +85,41 @@ MainWindow::~MainWindow()
 
 void MainWindow::onStart()
 {
+    updateAlgorithmCenter(); // <--- 確保圓心在中心
+    m_algorithm->reset();
+    m_paintFrame->update();    // 清空畫面
+    m_animationTimer.start(); // 開始計時
+
     m_timer->start(30); // 每 30ms 走一步
 }
 
+void MainWindow::updateAlgorithmCenter() {
+    // 取得畫布目前的中心點
+    int centerX = m_paintFrame->width() / 2;
+    int centerY = m_paintFrame->height() / 2;
+
+    // 更新演算法的圓心
+    m_algorithm->setCenter(centerX, centerY);
+}
+
+
 void MainWindow::onStep()
 {
+
+    // 如果是第一次執行（點集是空的），更新圓心
+    if (m_algorithm->getMidpointPoints().empty() &&
+        m_algorithm->getParametricPoints().empty() &&
+        m_algorithm->getBresenhamPoints().empty()) {
+        updateAlgorithmCenter();
+    }
+
+    m_algorithm->next();
+    /*
     if (m_useParametric)
         m_algorithm->nextParametric();
     else
         m_algorithm->nextMidpoint();
+    */
 
     m_paintFrame->update();
 }
@@ -96,6 +137,8 @@ void MainWindow::onDiameterChanged(int value)
     // 重設算法狀態
     m_algorithm->resetMidpoint();
     m_algorithm->resetParametric();
+    m_algorithm->resetBresenham();
+    //新增演算法時,可以在這邊新增
 
     m_paintFrame->update();
 }
@@ -103,10 +146,17 @@ void MainWindow::onDiameterChanged(int value)
 void MainWindow::onAlgorithmChanged(int index)
 {
     m_timer->stop();
+    updateAlgorithmCenter(); // <--- 切換時也更新一次圓心
+
 
     // 根據索引設定模式
     CircleMode mode = static_cast<CircleMode>(index);
+
+    // 1. 設定邏輯層的模式
     m_algorithm->setMode(mode);
+
+    // 2. 設定繪圖層的模式，不然 PaintFrame 永遠只會畫 Midpoint 的 vector
+    m_paintFrame->setMode(mode);
 
 
     // 重設對應的演算法狀態（或是全部重設也可以）

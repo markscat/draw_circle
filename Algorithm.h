@@ -16,7 +16,10 @@ public:
 
     // 新增：設定目前的模式與統一的執行介面
     void setMode(CircleMode mode);
+    void reset(); // <--- 新增這一行
     bool next();
+
+    void setCenter(int cx, int cy);
 
     // Midpoint 圓演算法
     void resetMidpoint();
