@@ -184,7 +184,8 @@ double Algorithm::getHarmonicY(double theta) const {
     double sum = 0;
     // 只取奇數項：1, 3, 5, 7...
     for (int i = 0; i < m_harmonicCount; ++i) {
-        int n = 2 * i + 1; // 奇數頻率
+        //int n = 2 * i + 1; // 奇數頻率
+        int n =  i + 1; // 偶數頻率
         sum += (1.0 / n) * sin(n * theta);
     }
     return sum; // 這裡不乘 4/pi 也可以，比例正確即可

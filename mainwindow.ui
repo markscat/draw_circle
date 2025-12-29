@@ -262,6 +262,19 @@
        <enum>QFrame::Shadow::Raised</enum>
       </property>
      </widget>
+     <widget class="QRadioButton" name="towDtheD_radioButton">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>260</y>
+        <width>94</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>RadioButton</string>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
