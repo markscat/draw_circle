@@ -14,6 +14,19 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // --- 0. 先建立計時器實體 (確保指標安全) ---
+    m_timer = new QTimer(this);
+    m_waveTimer = new QTimer(this);
+
+    // --- 5. 互斥處理：切換標籤頁時停止所有動畫 ---
+    connect(ui->Circle_tabWidget, &QTabWidget::currentChanged, [=](int index){
+        m_timer->stop();      // 停止圓形演算法計時器
+        m_waveTimer->stop();  // 停止波形計時器
+    });
+
+
+    //Circle_Tab begin
+
     // 【重點 1】將成員指標指向 UI 裡的物件
     m_paintFrame = ui->Paint_frame;
     m_paintFrame->setAlgorithm(m_algorithm);
@@ -36,11 +49,13 @@ MainWindow::MainWindow(QWidget *parent)
         // 不管是哪種模式，通通呼叫 next()
         if (!m_algorithm->next()) {
             m_timer->stop();
+            double totalSeconds = m_animationTimer.elapsed() / 1000.0;
+            ui->Time_label->setText(QString("動畫總計: %1 s").arg(totalSeconds));
         }
         m_paintFrame->update();
     });
 
-
+/*
     // 在 Timer 的 connect 區塊內
     connect(m_timer, &QTimer::timeout, [=](){
         if (!m_algorithm->next()) {
@@ -49,17 +64,6 @@ MainWindow::MainWindow(QWidget *parent)
             double totalSeconds = m_animationTimer.elapsed() / 1000.0;
             ui->Time_label->setText(QString("動畫總計: %1 s").arg(totalSeconds));
         }
-        m_paintFrame->update();
-    });
-
-/*
-    connect(m_timer, &QTimer::timeout, [=](){
-        bool running = false;
-        if (ui->Algorithm_comboBox->currentIndex() == 0) running = m_algorithm->nextMidpoint();
-        else if (ui->Algorithm_comboBox->currentIndex() == 1) running = m_algorithm->nextParametric();
-        else running = m_algorithm->nextBresenham();
-
-        if (!running) m_timer->stop();
         m_paintFrame->update();
     });
 */
@@ -75,6 +79,85 @@ MainWindow::MainWindow(QWidget *parent)
     // 下拉選單切換算法 (必須在 UI 中加一個 ComboBox)
      connect(ui->Algorithm_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &MainWindow::onAlgorithmChanged);
+
+   //Circle_Tab end
+
+
+    // Wave_Tab begin
+
+     // --- 1. 初始化 Wave_tab 的畫框角色 ---
+     ui->Circle_frame->setAlgorithm(m_algorithm);
+     ui->Circle_frame->setRole(FrameRole::WaveCircle);
+
+     ui->Sin_frame->setAlgorithm(m_algorithm);
+     ui->Sin_frame->setRole(FrameRole::SineWave);
+
+     ui->cos_frame->setAlgorithm(m_algorithm);
+     ui->cos_frame->setRole(FrameRole::CosineWave);
+
+     // --- 2. 初始化頻率選單 ---
+     // 使用 QComboBox 的 userData 儲存每次增加的角度步長 (deltaTheta)
+     ui->Frequency_comboBox->addItem("極慢 (0.02)", 0.02);
+     ui->Frequency_comboBox->addItem("慢 (0.05)", 0.05);
+     ui->Frequency_comboBox->addItem("一般 (0.1)", 0.1);
+     ui->Frequency_comboBox->addItem("快 (0.2)", 0.2);
+     ui->Frequency_comboBox->setCurrentIndex(2); // 預設一般
+
+
+     // --- 3. 設定 Wave 動畫計時器 ---
+     m_waveTimer = new QTimer(this);
+
+     connect(m_waveTimer, &QTimer::timeout, [=](){
+         // 從 ComboBox 取得目前的頻率數值
+         double speed = ui->Frequency_comboBox->currentData().toDouble();
+
+         // 更新演算法的角度歷史
+         m_algorithm->nextWave(speed);
+
+         // 同步更新三個畫框
+         ui->Circle_frame->update();
+         ui->Sin_frame->update();
+         ui->cos_frame->update();
+     });
+
+
+     // --- 4. 按鈕連線 ---
+     connect(ui->Wave_Start_pushButton, &QPushButton::clicked, [=](){
+         m_waveTimer->start(30);
+     });
+
+     connect(ui->Wave_Stop_pushButton, &QPushButton::clicked, [=](){
+         m_waveTimer->stop();
+     });
+
+     connect(ui->step_pushButton, &QPushButton::clicked, [=](){
+         double speed = ui->Frequency_comboBox->currentData().toDouble();
+         m_algorithm->nextWave(speed);
+         ui->Circle_frame->update();
+         ui->Sin_frame->update();
+         ui->cos_frame->update();
+     });
+
+     ui->Harmonic_comboBox->addItem("1 Harmonic (Pure)", 1);
+     ui->Harmonic_comboBox->addItem("2 Harmonics", 2);
+     ui->Harmonic_comboBox->addItem("3 Harmonics", 3);
+     ui->Harmonic_comboBox->addItem("5 Harmonics", 5);
+     ui->Harmonic_comboBox->addItem("10 Harmonics (Square)", 10);
+     ui->Harmonic_comboBox->addItem("20 Harmonics (Sharp)", 20);
+
+     connect(ui->Harmonic_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int index){
+         int count = ui->Harmonic_comboBox->currentData().toInt();
+         m_algorithm->setHarmonicCount(count);
+         // 更新畫面讓使用者即時看到圓的變化
+         ui->Circle_frame->update();
+         ui->Sin_frame->update();
+         ui->cos_frame->update();
+     });
+
+     // Wave_Tab end
+
+
+
 }
 
 MainWindow::~MainWindow()

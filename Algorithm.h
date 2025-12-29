@@ -49,6 +49,14 @@ public:
     double getWaveTheta() const;
     const std::deque<double>& getWaveHistory() const;
 
+    void setHarmonicCount(int count) { m_harmonicCount = count; }
+    int getHarmonicCount() const { return m_harmonicCount; }
+
+    // 輔助函式：計算給定角度在諧波疊加後的結果 (用於波形繪製)
+    double getHarmonicY(double theta) const;
+    double getHarmonicX(double theta) const;
+
+
 
 private:
     int m_cx, m_cy;
@@ -81,6 +89,9 @@ private:
     double m_waveTheta;        // 目前轉動的角度
     std::deque<double> m_waveHistory; // 儲存過去的角度序列，用來畫 Sine/Cosine 波
     const size_t m_maxHistory = 500;  // 波形保留的最大長度
+
+    int m_harmonicCount = 1; // 預設只有 1 次諧波 (即純粹的正弦波)
+
 };
 
 

@@ -179,3 +179,36 @@ double Algorithm::getWaveTheta() const {
 const std::deque<double>& Algorithm::getWaveHistory() const {
     return m_waveHistory;
 }
+
+double Algorithm::getHarmonicY(double theta) const {
+    double sum = 0;
+    // 只取奇數項：1, 3, 5, 7...
+    for (int i = 0; i < m_harmonicCount; ++i) {
+        int n = 2 * i + 1; // 奇數頻率
+        sum += (1.0 / n) * sin(n * theta);
+    }
+    return sum; // 這裡不乘 4/pi 也可以，比例正確即可
+}
+
+
+#ifdef getHarmonicX_Type1
+double Algorithm::getHarmonicX(double theta) const {
+    double sum = 0;
+    for (int i = 0; i < m_harmonicCount; ++i) {
+        int n = 2 * i + 1;
+        sum += (1.0 / n) * cos(n * theta);
+    }
+    return sum;
+}
+#endif
+
+double Algorithm::getHarmonicX(double theta) const {
+    double sum = 0;
+    for (int i = 0; i < m_harmonicCount; ++i) {
+        int n = 2 * i + 1;
+        // 使用 (-1)^i 來讓係數正負交替：1, -1/3, 1/5, -1/7...
+        double sign = (i % 2 == 0) ? 1.0 : -1.0;
+        sum += (sign / n) * cos(n * theta);
+    }
+    return sum;
+}

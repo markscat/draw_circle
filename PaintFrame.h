@@ -18,12 +18,16 @@ class PaintFrame : public QFrame
 {
     Q_OBJECT
 public:
+
     explicit PaintFrame(QWidget *parent = nullptr);
 
     void setAlgorithm(Algorithm *algo) { m_algorithm = algo; }
 
-    void setUseParametric(bool use) { m_useParametric = use; }
     void setMode(CircleMode mode) { m_currentMode = mode; }
+
+
+
+    //void setUseParametric(bool use) { m_useParametric = use; }
 
     void setRole(FrameRole role) { m_role = role; }
 
@@ -32,10 +36,13 @@ protected:
 
 private:
     Algorithm *m_algorithm = nullptr;
-    bool m_useParametric = false;
 
+
+
+    //bool m_useParametric = false;
+
+    // 狀態變數
     CircleMode m_currentMode = CircleMode::Midpoint; // 儲存目前的模式
-
     FrameRole m_role = FrameRole::CircleAlgorithm; // 預設角色
 
 

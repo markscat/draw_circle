@@ -29,6 +29,9 @@ private:
     QElapsedTimer m_animationTimer;
     void updateAlgorithmCenter();
 
+    QTimer *m_waveTimer; // 專屬波形的計時器
+
+
 private slots:
     void onStart();
     void onStep();

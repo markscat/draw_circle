@@ -155,7 +155,7 @@
         <x>10</x>
         <y>10</y>
         <width>95</width>
-        <height>158</height>
+        <height>179</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -189,6 +189,16 @@
        </item>
        <item>
         <widget class="QComboBox" name="Frequency_comboBox"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>協波</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="Harmonic_comboBox"/>
        </item>
       </layout>
      </widget>
@@ -261,7 +271,7 @@
      <x>0</x>
      <y>0</y>
      <width>972</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
