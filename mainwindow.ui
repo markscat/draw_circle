@@ -272,7 +272,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>RadioButton</string>
+       <string>2D/3D</string>
       </property>
      </widget>
     </widget>

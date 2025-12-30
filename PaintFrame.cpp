@@ -95,70 +95,89 @@ void PaintFrame::drawWaveCircle(QPainter *painter)
     int lastX = cx;
     int lastY = cy;
 
-    for (int i = 0; i < count; ++i) {
-        int n = 2 * i + 1; // 奇數項
-        int r = static_cast<int>(baseR * (1.0 / n)); // 振幅隨頻率反比減少
+    if (!m_is3D) {
+        for (int i = 0; i < count; ++i) {
+            int n = 2 * i + 1; // 奇數項
+            int r = static_cast<int>(baseR * (1.0 / n)); // 振幅隨頻率反比減少
 
-        // 畫目前這個層級的圓
-        painter->setPen(QPen(Qt::lightGray, 1));
-        painter->setBrush(Qt::NoBrush);
-        painter->drawEllipse(QPoint(lastX, lastY), r, r);
+            // 畫目前這個層級的圓
+            painter->setPen(QPen(Qt::lightGray, 1));
+            painter->setBrush(Qt::NoBrush);
+            painter->drawEllipse(QPoint(lastX, lastY), r, r);
 
-        // 計算目前這個圓周上的點
-        int curX = lastX + static_cast<int>(r * cos(n * theta));
-        int curY = lastY - static_cast<int>(r * sin(n * theta));
+            // 計算目前這個圓周上的點
+            int curX = lastX + static_cast<int>(r * cos(n * theta));
+            int curY = lastY - static_cast<int>(r * sin(n * theta));
 
-        // 畫連心線
-        painter->setPen(QPen(Qt::blue, 1));
-        painter->drawLine(lastX, lastY, curX, curY);
+            // 畫連心線
+            painter->setPen(QPen(Qt::blue, 1));
+            painter->drawLine(lastX, lastY, curX, curY);
 
-        // 更新下一個圓的中心點
-        lastX = curX;
-        lastY = curY;
+            // 更新下一個圓的中心點
+            lastX = curX;
+            lastY = curY;
+        }
+
+        // 最終點畫一個小紅球
+        painter->setBrush(Qt::red);
+        painter->drawEllipse(QPoint(lastX, lastY), 4, 4);
+
+        // 畫投影引導線
+        painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
+        painter->drawLine(lastX, lastY, width(), lastY);
+        painter->drawLine(lastX, lastY, lastX, height());
+        return;
     }
 
 
-    // 最終點畫一個小紅球
-    painter->setBrush(Qt::red);
-    painter->drawEllipse(QPoint(lastX, lastY), 4, 4);
+    // --- 以下是 3D 模式邏輯 ---
+    const std::deque<double>& history = m_algorithm->getWaveHistory();
+    if (history.empty()) return;
 
-    // 畫投影引導線
-    painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
-    painter->drawLine(lastX, lastY, width(), lastY);
-    painter->drawLine(lastX, lastY, lastX, height());
+    QPolygonF spiralPoints;
 
+    // 我們遍歷歷史紀錄，將每一刻的「合成點」算出來並加上 Z 位移
+    for (size_t i = 0; i < history.size(); ++i) {
+        double theta = history[i];
 
-/*
+        // 取得該時刻的合成 X 和 Y (已包含所有諧波)
+        double hx = m_algorithm->getHarmonicX(theta) * baseR;
+        double hy = m_algorithm->getHarmonicY(theta) * baseR;
 
-    // 3. 計算目前的點座標 (極座標轉直角座標)
-    // 注意：Qt 的 Y 軸是向下的，所以 sin 要加負號才能讓波形向上升
-    int px = cx + static_cast<int>(r * cos(theta));
-    int py = cy - static_cast<int>(r * sin(theta));
+        // 虛擬 Z 軸：索引越老，Z 越深
+        double hz = i * 1.5; // 控制螺旋拉伸的長度
 
-    // --- 開始繪製 ---
+        // 投影公式：將 (x, y, z) 轉換為螢幕 (x', y')
+        // 我們讓 Z 軸往右上方 45 度角延伸
+        double screenX = cx + hx + hz * 0.7;
+        double screenY = cy - hy - hz * 0.4;
 
-    // A. 畫背景圓 (淡灰色)
-    painter->setPen(QPen(Qt::lightGray, 1, Qt::SolidLine));
-    painter->drawEllipse(QPoint(cx, cy), r, r);
+        spiralPoints << QPointF(screenX, screenY);
 
-    // B. 畫旋轉半徑 (向量)
+        // 畫出最前端那一組圓的「斷面」即可，不然圓太多會太亂
+        if (i == 0) {
+            // 這裡可以簡單畫一下目前的圓心結構
+            painter->setPen(QPen(Qt::lightGray, 1));
+            painter->drawPolyline(spiralPoints); // 暫時佔位
+        }
+    }
+
+    // 畫出整條 3D 螺旋線
     painter->setPen(QPen(Qt::blue, 2));
-    painter->drawLine(cx, cy, px, py);
+    painter->drawPolyline(spiralPoints);
 
-    // C. 畫旋轉點
-    painter->setBrush(Qt::red);
-    painter->setPen(Qt::NoPen);
-    painter->drawEllipse(QPoint(px, py), 5, 5); // 畫一個半徑 5 的小球
+    // 在最前端（最新的點）畫個紅球
+    if (!spiralPoints.empty()) {
+        painter->setBrush(Qt::red);
+        painter->setPen(Qt::NoPen);
+        painter->drawEllipse(spiralPoints[0], 5, 5);
 
-    // D. 畫投影引導線 (虛線)
-    painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
+        // 3D 模式下的引導線：從紅球拉到畫布邊緣
+        painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
+        painter->drawLine(spiralPoints[0].x(), spiralPoints[0].y(), width(), spiralPoints[0].y());
+        painter->drawLine(spiralPoints[0].x(), spiralPoints[0].y(), spiralPoints[0].x(), height());
+    }
 
-    // 水平引導線：從旋轉點往右拉到畫布邊緣 (給 Sine 波接應)
-    painter->drawLine(px, py, width(), py);
-
-    // 垂直引導線：從旋轉點往下延伸到畫布邊緣 (給 Cosine 波接應)
-    painter->drawLine(px, py, px, height());
-*/
 }
 
 void PaintFrame::drawSineWave(QPainter *painter)
@@ -176,19 +195,43 @@ void PaintFrame::drawSineWave(QPainter *painter)
     painter->drawLine(0, cy, w, cy);
 
     QPolygonF wavePoints;
+
     for (size_t i = 0; i < history.size(); ++i) {
         double theta = history[i];
+        //double sy = m_algorithm->getHarmonicY(theta) * r; // Sine 值 (上下)
 
-        // 【核心修改】：呼叫 Algorithm 的諧波總和函式
-        double harmonicSumY = m_algorithm->getHarmonicY(theta);
+        // 取得該時刻的諧波合成值
+        double hy = m_algorithm->getHarmonicY(theta) * r; // Sine 分量 (高度)
+        double hx = m_algorithm->getHarmonicX(theta) * r; // Cosine 分量 (深度)
+        double screenX, screenY;
 
-        double px = i * xSpacing;
-        double py = cy - harmonicSumY * r; // 這裡 y 座標由諧波決定
+        //double px, py;
+        if (m_is3D) {
 
-        wavePoints << QPointF(px, py);
-        if (px > w) break;
+            // --- 3D 投影模式 ---
+            // i * xSpacing 是時間（向右延伸）
+            // hx * 0.4 是將 X 軸的擺動投影為「深度偏移」
+            screenX = (i * xSpacing) + (hx * 0.4);
+
+            // cy - hy 是原始高度
+            // hx * 0.2 是深度的垂直偏移（產生立體傾斜感）
+            screenY = cy - hy - (hx * 0.2);
+        } else {
+            // --- 2D 平面模式 ---
+            screenX = i * xSpacing;
+            screenY = cy - hy;
+        }
+
+        // 【修正點】：要把算好的點放進點集裡，不然 wavePoints 永遠是空的
+        wavePoints << QPointF(screenX, screenY);
+
+        // 如果超出畫布且非 3D 模式則停止（3D 模式下因為有偏移，建議多畫一點）
+        if (screenX > w && !m_is3D) break;
     }
 
+
+    // 4. 繪製波形路徑
+    painter->setRenderHint(QPainter::Antialiasing); // 開啟抗鋸齒
     painter->setPen(QPen(Qt::green, 2));
     painter->drawPolyline(wavePoints);
 
@@ -202,6 +245,76 @@ void PaintFrame::drawSineWave(QPainter *painter)
         painter->drawLine(0, wavePoints[0].y(), w, wavePoints[0].y());
     }
 }
+
+void PaintFrame::drawCosineWave(QPainter *painter)
+{
+    // 1. 基礎數據準備
+    const std::deque<double>& history = m_algorithm->getWaveHistory();
+    if (history.empty()) return;
+
+    int w = width();
+    int h = height();
+    int cx = w / 2;    // 垂直中心線 (Cosine 的基準)
+    int r = 100;       // 振幅
+    int ySpacing = 2;  // 時間軸（縱向）間距
+
+    // 2. 畫背景基準線 (淺灰色垂直線)
+    painter->setPen(QPen(Qt::lightGray, 1, Qt::DashLine));
+    painter->drawLine(cx, 0, cx, h);
+
+    // 3. 計算並收集點位
+    QPolygonF wavePoints;
+    for (size_t i = 0; i < history.size(); ++i) {
+        double theta = history[i];
+
+        // 取得該時刻的諧波合成值
+        double hx = m_algorithm->getHarmonicX(theta) * r; // Cosine 分量 (主要的橫向擺動)
+        double hy = m_algorithm->getHarmonicY(theta) * r; // Sine 分量 (3D 模式下的深度)
+
+        double screenX, screenY;
+
+        if (m_is3D) {
+            // --- 3D 投影模式 ---
+            // i * ySpacing 是時間（向下延伸）
+            // hy * 0.4 作為橫向的深度偏移量，讓波形產生「左右扭動」的立體感
+            screenX = (cx + hx) + (hy * 0.4);
+
+            // i * ySpacing 是原始縱向位置
+            // hy * 0.2 是深度的垂直修正
+            screenY = (i * ySpacing) - (hy * 0.2);
+        } else {
+            // --- 2D 平面模式 ---
+            screenX = cx + hx;
+            screenY = i * ySpacing;
+        }
+
+        // 將點加入點集
+        wavePoints << QPointF(screenX, screenY);
+
+        // 如果超出畫布下邊界則停止
+        if (screenY > h && !m_is3D) break;
+    }
+
+    // 4. 繪製波形路徑
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setPen(QPen(Qt::darkCyan, 2));
+    painter->drawPolyline(wavePoints);
+
+    // 5. 繪製前端標記與垂直引導線
+    if (!wavePoints.empty()) {
+        // 繪製頂端的紅色接點
+        painter->setBrush(Qt::red);
+        painter->setPen(Qt::NoPen);
+        painter->drawEllipse(wavePoints[0], 4, 4);
+
+        // 畫一條貫穿畫布的垂直虛線，接應上方圓形傳來的 X 軸位置
+        // 注意：在 3D 下，這條線會隨著投影點的 X 座標移動
+        painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
+        painter->drawLine(wavePoints[0].x(), 0, wavePoints[0].x(), h);
+    }
+}
+
+/*
 void PaintFrame::drawCosineWave(QPainter *painter)
 {
     const std::deque<double>& history = m_algorithm->getWaveHistory();
@@ -242,7 +355,7 @@ void PaintFrame::drawCosineWave(QPainter *painter)
         painter->drawLine(wavePoints[0].x(), 0, wavePoints[0].x(), h);
     }
 }
-
+*/
 
 #ifdef NO_harmonic
 void PaintFrame::drawSineWave(QPainter *painter)

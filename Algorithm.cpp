@@ -180,6 +180,23 @@ const std::deque<double>& Algorithm::getWaveHistory() const {
     return m_waveHistory;
 }
 
+
+#define getHarmonicY_even
+
+#ifdef getHarmonicY_even
+double Algorithm::getHarmonicY(double theta) const {
+    double sum = 0;
+    // 只取奇數項：1, 3, 5, 7...
+    for (int i = 0; i < m_harmonicCount; ++i) {
+        int n = 2 * i + 1; // 奇數頻率
+        //int n =  i + 1; // 偶數頻率
+        sum += (1.0 / n) * sin(n * theta);
+    }
+    return sum; // 這裡不乘 4/pi 也可以，比例正確即可
+}
+#endif
+
+#ifdef getHarmonicY_odd
 double Algorithm::getHarmonicY(double theta) const {
     double sum = 0;
     // 只取奇數項：1, 3, 5, 7...
@@ -190,8 +207,9 @@ double Algorithm::getHarmonicY(double theta) const {
     }
     return sum; // 這裡不乘 4/pi 也可以，比例正確即可
 }
+#endif
 
-
+#define getHarmonicX_Type2
 #ifdef getHarmonicX_Type1
 double Algorithm::getHarmonicX(double theta) const {
     double sum = 0;
@@ -202,7 +220,7 @@ double Algorithm::getHarmonicX(double theta) const {
     return sum;
 }
 #endif
-
+#ifdef getHarmonicX_Type2
 double Algorithm::getHarmonicX(double theta) const {
     double sum = 0;
     for (int i = 0; i < m_harmonicCount; ++i) {
@@ -213,3 +231,4 @@ double Algorithm::getHarmonicX(double theta) const {
     }
     return sum;
 }
+#endif

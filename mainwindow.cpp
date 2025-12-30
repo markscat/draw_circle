@@ -154,9 +154,19 @@ MainWindow::MainWindow(QWidget *parent)
          ui->cos_frame->update();
      });
 
+
+
+     connect(ui->towDtheD_radioButton, &QRadioButton::toggled, [=](bool checked){
+         ui->Circle_frame->set3DMode(checked);
+         ui->Sin_frame->set3DMode(checked);
+         ui->cos_frame->set3DMode(checked);
+         ui->Circle_frame->update();
+         ui->Sin_frame->update();
+         ui->cos_frame->update();
+
+     });
+
      // Wave_Tab end
-
-
 
 }
 

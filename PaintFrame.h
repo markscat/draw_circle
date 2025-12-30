@@ -25,6 +25,7 @@ public:
 
     void setMode(CircleMode mode) { m_currentMode = mode; }
 
+    void set3DMode(bool enabled) { m_is3D = enabled; }
 
 
     //void setUseParametric(bool use) { m_useParametric = use; }
@@ -37,9 +38,7 @@ protected:
 private:
     Algorithm *m_algorithm = nullptr;
 
-
-
-    //bool m_useParametric = false;
+    bool m_is3D = false; // 預設為 2D
 
     // 狀態變數
     CircleMode m_currentMode = CircleMode::Midpoint; // 儲存目前的模式
