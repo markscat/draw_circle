@@ -166,6 +166,15 @@ MainWindow::MainWindow(QWidget *parent)
 
      });
 
+     connect(ui->draw_Speed_Slider, &QSlider::valueChanged, [=](int value){
+         // 如果計時器正在跑，就即時更新它的速度
+         if (m_timer->isActive()) m_timer->start(value);
+         if (m_waveTimer->isActive()) m_waveTimer->start(value);
+
+         // 可以在 Label 顯示目前是幾 ms 一步
+         ui->draw_Speed_label->setText(QString("%1 ms").arg(value));
+         //mainwindow.cpp:175:33: No member named 'setText' in 'QSlider'
+     });
      // Wave_Tab end
 
 }
@@ -183,7 +192,7 @@ void MainWindow::onStart()
     m_paintFrame->update();    // 清空畫面
     m_animationTimer.start(); // 開始計時
 
-    m_timer->start(30); // 每 30ms 走一步
+    m_timer->start(50); // 每 30ms 走一步
 }
 
 void MainWindow::updateAlgorithmCenter() {
