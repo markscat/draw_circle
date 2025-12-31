@@ -173,7 +173,6 @@ MainWindow::MainWindow(QWidget *parent)
 
          // 可以在 Label 顯示目前是幾 ms 一步
          ui->draw_Speed_label->setText(QString("%1 ms").arg(value));
-         //mainwindow.cpp:175:33: No member named 'setText' in 'QSlider'
      });
      // Wave_Tab end
 

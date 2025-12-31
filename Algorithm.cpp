@@ -6,7 +6,11 @@
 #endif
 
 Algorithm::Algorithm(int cx, int cy, int radius)
-    : m_cx(cx), m_cy(cy), m_radius(radius), deltaTheta(0.01)
+    : m_cx(cx), m_cy(cy), m_radius(radius)
+    , deltaTheta(0.01)
+    , m_currentMode(CircleMode::Midpoint) // 務必初始化！
+    , m_harmonicCount(1)                  // 務必初始化！
+    , m_waveTheta(0.0)                    // 務必初始化！
 {
     m_currentMode = CircleMode::Midpoint; // 預設模式
     resetMidpoint();
