@@ -14,6 +14,15 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // 建立一個佈局
+    QVBoxLayout *mainLayout = new QVBoxLayout(ui->centralwidget);
+    // 將 TabWidget 加入佈局
+    mainLayout->addWidget(ui->Circle_tabWidget);
+
+    // 設定這行後，視窗縮放時 TabWidget 就會跟著動
+    ui->centralwidget->setLayout(mainLayout);
+
+
     // --- 0. 先建立計時器實體 (確保指標安全) ---
     m_timer = new QTimer(this);
     m_waveTimer = new QTimer(this);
@@ -33,8 +42,13 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     // 【重點 2】設定 Slider 範圍，否則預設可能是 0
-    ui->Diameter_horizontalSlider->setRange(1, 200);
-    ui->Diameter_horizontalSlider->setValue(50);
+    ui->Diameter_horizontalSlider->setRange(5, 200);
+    // 2. 設定初始數值 (例如預設 30ms)
+    int initialSpeed = 30;
+    ui->draw_Speed_Slider->setValue(initialSpeed);
+    // 3. 立即更新 Label 的文字，讓它一開始就顯示 "30 ms"
+    ui->draw_Speed_label->setText(QString("%1 ms").arg(initialSpeed));
+    //ui->Diameter_horizontalSlider->setValue(50);
 
     // 【重點 3】初始化 ComboBox 選項
     ui->Algorithm_comboBox->addItem("Midpoint");
@@ -55,18 +69,6 @@ MainWindow::MainWindow(QWidget *parent)
         m_paintFrame->update();
     });
 
-/*
-    // 在 Timer 的 connect 區塊內
-    connect(m_timer, &QTimer::timeout, [=](){
-        if (!m_algorithm->next()) {
-            m_timer->stop();
-            // 當動畫停止時，計算總耗時
-            double totalSeconds = m_animationTimer.elapsed() / 1000.0;
-            ui->Time_label->setText(QString("動畫總計: %1 s").arg(totalSeconds));
-        }
-        m_paintFrame->update();
-    });
-*/
 
     // 按鈕連線
     connect(ui->Start_pushButton_2, &QPushButton::clicked, this, &MainWindow::onStart);
@@ -157,9 +159,11 @@ MainWindow::MainWindow(QWidget *parent)
 
 
      connect(ui->towDtheD_radioButton, &QRadioButton::toggled, [=](bool checked){
+
          ui->Circle_frame->set3DMode(checked);
          ui->Sin_frame->set3DMode(checked);
          ui->cos_frame->set3DMode(checked);
+
          ui->Circle_frame->update();
          ui->Sin_frame->update();
          ui->cos_frame->update();
@@ -191,7 +195,11 @@ void MainWindow::onStart()
     m_paintFrame->update();    // 清空畫面
     m_animationTimer.start(); // 開始計時
 
-    m_timer->start(50); // 每 30ms 走一步
+    // 修改這裡：從 Slider 取得目前設定的速度，而不是固定 50
+    int currentSpeed = ui->draw_Speed_Slider->value();
+    m_timer->start(currentSpeed);
+
+    //m_timer->start(50); // 每 30ms 走一步
 }
 
 void MainWindow::updateAlgorithmCenter() {

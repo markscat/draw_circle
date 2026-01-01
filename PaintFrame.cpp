@@ -4,7 +4,9 @@
 PaintFrame::PaintFrame(QWidget *parent)
     : QFrame(parent)
 {
-    setMinimumSize(400, 400);
+    //setMinimumSize(400, 400);
+    setMinimumSize(50, 50);
+
     setStyleSheet("background-color: white; border: 1px solid black;");
 }
 
@@ -38,6 +40,11 @@ void PaintFrame::paintEvent(QPaintEvent *)
 
 void PaintFrame::drawCircleAlgorithms(QPainter *painter)
 {
+
+    // --- 關鍵修改 1 & 2：計算中心偏移量 ---
+    int dx = width() / 2 - 200;
+    int dy = height() / 2 - 200;
+
     painter->setPen(Qt::black);
     const std::vector<std::pair<int,int>>* pts = nullptr;
 
@@ -55,29 +62,13 @@ void PaintFrame::drawCircleAlgorithms(QPainter *painter)
         return;
     }
 
-
     // 加上安全檢查，確保 pts 不是空指標
     if (pts) {
         for (const auto &p : *pts) {
-            painter->drawPoint(p.first, p.second);
+            // --- 關鍵修改 3：畫點時加上偏移 ---
+            painter->drawPoint(p.first + dx, p.second + dy);
         }
     }
-
-
-    /*
-    if (!m_algorithm) return;
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-
-    //painter.setPen(Qt::black);
-
-
-    //const std::vector<std::pair<int,int>>* pts;
-    const std::vector<std::pair<int,int>>* pts = nullptr;
-
-*/
-
 }
 
 void PaintFrame::drawWaveCircle(QPainter *painter)
@@ -85,9 +76,9 @@ void PaintFrame::drawWaveCircle(QPainter *painter)
     // 1. 取得畫布中心與半徑
     int cx = width() / 2;
     int cy = height() / 2;
-    //int r = 80; // 你也可以讓這連動 slider 的 radius
+    
+     int baseR = qMin(width(), height()) * 0.35;
 
-    int baseR = 100; // 基礎大圓半徑
     // 2. 取得目前的角度 (從 Algorithm 取得)
     double theta = m_algorithm->getWaveTheta();
     int count = m_algorithm->getHarmonicCount();
@@ -187,7 +178,7 @@ void PaintFrame::drawSineWave(QPainter *painter)
 
     int w = width();
     int h = height();
-    int cy = h / 2;
+    int cy = h / 2;  // 這裡要確保 cy 與 Circle_frame 的圓心高度一致
     int r = 100;       // 基礎半徑，需與 drawWaveCircle 一致
     int xSpacing = 2;
 

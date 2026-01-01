@@ -133,6 +133,17 @@ bool Algorithm::nextBresenham() {
 
 // 這是專門給 Bresenham 用的對稱點函式，邏輯與 Midpoint 一樣，但存入 m_bresPoints
 void Algorithm::addEightPoints(int x, int y, std::vector<std::pair<int,int>>& container) {
+
+    m_bresPoints.push_back({x, y});
+    m_bresPoints.push_back({x, y});
+    m_bresPoints.push_back({x, y});
+    m_bresPoints.push_back({x, y});
+    m_bresPoints.push_back({y, x});
+    m_bresPoints.push_back({y, x});
+    m_bresPoints.push_back({y, x});
+    m_bresPoints.push_back({y, x});
+
+    /*
     m_bresPoints.push_back({m_cx + x, m_cy + y});
     m_bresPoints.push_back({m_cx - x, m_cy + y});
     m_bresPoints.push_back({m_cx + x, m_cy - y});
@@ -141,6 +152,7 @@ void Algorithm::addEightPoints(int x, int y, std::vector<std::pair<int,int>>& co
     m_bresPoints.push_back({m_cx - y, m_cy + x});
     m_bresPoints.push_back({m_cx + y, m_cy - x});
     m_bresPoints.push_back({m_cx - y, m_cy - x});
+*/
 }
 
 
@@ -214,6 +226,7 @@ double Algorithm::getHarmonicY(double theta) const {
 #endif
 
 #define getHarmonicX_Type2
+
 #ifdef getHarmonicX_Type1
 double Algorithm::getHarmonicX(double theta) const {
     double sum = 0;
